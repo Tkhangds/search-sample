@@ -1,10 +1,12 @@
 using System.Net;
 using Eme_Search.Common;
+using Eme_Search.Common.Cache;
 using Eme_Search.Modules.Search.DTOs;
 using Eme_Search.Modules.Search.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Eme_Search.Utils;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Eme_Search.Modules.Search;
@@ -12,12 +14,12 @@ namespace Eme_Search.Modules.Search;
 public class SearchController: ApiController
 {
     private readonly SearchServiceResolver _resolver;
-    private readonly IMemoryCache _cache;
+    private readonly ICacheService _cacheService;
 
-    public SearchController(SearchServiceResolver resolver, IMemoryCache cache)
+    public SearchController(SearchServiceResolver resolver, IMemoryCache cache, ICacheService cacheService)
     {
-        _cache = cache;
         _resolver = resolver;
+        _cacheService = cacheService;
     }
     
     [HttpGet()]
@@ -27,7 +29,9 @@ public class SearchController: ApiController
         
         string cacheKey = provider + requestDto.ToQueryString();
         
-        if (_cache.TryGetValue(cacheKey, out StandardBusinessSearchResponse? cachedProduct))
+        var cachedProduct = await _cacheService.GetAsync<StandardBusinessSearchResponse>(cacheKey);
+        
+        if (cachedProduct != null)
         {
             return Ok(new SuccessResponse
             {
@@ -39,11 +43,11 @@ public class SearchController: ApiController
         
         var result = await searchService.SearchAsync(requestDto);
         
-        var cacheEntryOptions = new MemoryCacheEntryOptions()
-            .SetSlidingExpiration(TimeSpan.FromMinutes(5))
-            .SetAbsoluteExpiration(TimeSpan.FromMinutes(20));
+        var options = new DistributedCacheEntryOptions()
+            .SetSlidingExpiration(TimeSpan.FromMinutes(10))
+            .SetAbsoluteExpiration(TimeSpan.FromHours(1));
         
-        _cache.Set(cacheKey, result, cacheEntryOptions);
+        await _cacheService.SetAsync<StandardBusinessSearchResponse>(cacheKey, result, options);
         
         return Ok(new SuccessResponse
         {
