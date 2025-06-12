@@ -1,8 +1,9 @@
 using System.Text.Json.Serialization;
+using Google.Protobuf.Reflection;
 
 namespace Eme_Search.Modules.Search.DTOs;
 
-public class YelpSearchResponse
+public class StandardSearchResultDto
 {
     [JsonPropertyName("id")]
     public string Id { get; set; } = string.Empty;
@@ -41,7 +42,7 @@ public class YelpSearchResponse
     public string? Price { get; set; }
 
     [JsonPropertyName("location")]
-    public Location Location { get; set; } = new();
+    public SourceCodeInfo.Types.Location Location { get; set; } = new();
 
     [JsonPropertyName("phone")]
     public string Phone { get; set; } = string.Empty;
@@ -146,10 +147,10 @@ public class Category
         public bool? WaitlistReservation { get; set; }
     }
 
-    public class YelpBusinessSearchResponse
+    public class StandardBusinessSearchResponse
     {
         [JsonPropertyName("businesses")]
-        public List<YelpSearchResponse> Businesses { get; set; } = new();
+        public List<StandardSearchResultDto> Businesses { get; set; } = new();
 
         [JsonPropertyName("total")]
         public int Total { get; set; }

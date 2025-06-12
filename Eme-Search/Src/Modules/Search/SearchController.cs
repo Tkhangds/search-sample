@@ -11,23 +11,23 @@ namespace Eme_Search.Modules.Search;
 
 public class SearchController: ApiController
 {
-    private readonly ISearchService _searchService;   
+    private readonly SearchServiceResolver _resolver;
     private readonly IMemoryCache _cache;
 
-    public SearchController(ISearchService searchService, IMemoryCache cache)
+    public SearchController(SearchServiceResolver resolver, IMemoryCache cache)
     {
         _cache = cache;
-        _searchService = searchService;
+        _resolver = resolver;
     }
     
     [HttpGet()]
-    public async Task<ActionResult> Search([FromQuery] YelpSearchRequest request)
+    public async Task<ActionResult> Search([FromQuery] StandardSearchRequestDto requestDto, string provider = "yelp")
     {
-        string cacheKey = request.ToQueryString();
-
-        Console.WriteLine(cacheKey);
+        var searchService = _resolver.Resolve(provider);
         
-        if (_cache.TryGetValue(cacheKey, out YelpBusinessSearchResponse? cachedProduct))
+        string cacheKey = provider + requestDto.ToQueryString();
+        
+        if (_cache.TryGetValue(cacheKey, out StandardBusinessSearchResponse? cachedProduct))
         {
             return Ok(new SuccessResponse
             {
@@ -37,7 +37,7 @@ public class SearchController: ApiController
             });
         }
         
-        var result = await _searchService.SearchAsync(request);
+        var result = await searchService.SearchAsync(requestDto);
         
         var cacheEntryOptions = new MemoryCacheEntryOptions()
             .SetSlidingExpiration(TimeSpan.FromMinutes(5))

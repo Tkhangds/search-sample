@@ -4,6 +4,6 @@ namespace Eme_Search.Modules.Search.Services;
 
 public interface ISearchService
 {
-    Task<YelpBusinessSearchResponse> SearchAsync(YelpSearchRequest request);
-
+    string ProviderName { get; }
+    Task<StandardBusinessSearchResponse> SearchAsync(StandardSearchRequestDto requestDto);
 }

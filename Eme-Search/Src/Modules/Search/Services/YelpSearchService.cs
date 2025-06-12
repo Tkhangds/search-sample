@@ -7,6 +7,8 @@ namespace Eme_Search.Modules.Search.Services;
 
 public class YelpSearchService: ISearchService
 {
+    public string ProviderName => "yelp";
+    
     private readonly IConfiguration _configuration;
     private readonly RestClient _client;
     
@@ -27,90 +29,90 @@ public class YelpSearchService: ISearchService
         _client.AddDefaultHeader("authorization", $"Bearer {secretKey}");
     }
     
-    public async Task<YelpBusinessSearchResponse?> SearchAsync(YelpSearchRequest yelpRequest)
+    public async Task<StandardBusinessSearchResponse> SearchAsync(StandardSearchRequestDto yelpRequestDto)
     {
         var request = new RestRequest("");
 
-        if (!string.IsNullOrWhiteSpace(yelpRequest.Location))
+        if (!string.IsNullOrWhiteSpace(yelpRequestDto.Location))
         {
-            request.AddQueryParameter("location", yelpRequest.Location.Trim());
+            request.AddQueryParameter("location", yelpRequestDto.Location.Trim());
         }
 
-        if(yelpRequest.Longitude.HasValue && yelpRequest.Latitude.HasValue)
+        if(yelpRequestDto.Longitude.HasValue && yelpRequestDto.Latitude.HasValue)
         {
-            request.AddQueryParameter("longitude", yelpRequest.Longitude.Value);
-            request.AddQueryParameter("latitude", yelpRequest.Latitude.Value);
+            request.AddQueryParameter("longitude", yelpRequestDto.Longitude.Value);
+            request.AddQueryParameter("latitude", yelpRequestDto.Latitude.Value);
         }
         
-        if (!string.IsNullOrWhiteSpace(yelpRequest.Term))
+        if (!string.IsNullOrWhiteSpace(yelpRequestDto.Term))
         {
-            request.AddQueryParameter("term", yelpRequest.Term.Trim());
+            request.AddQueryParameter("term", yelpRequestDto.Term.Trim());
         }
         
-        if (yelpRequest.Radius.HasValue)
+        if (yelpRequestDto.Radius.HasValue)
         {
-            request.AddQueryParameter("radius", yelpRequest.Radius.Value);
+            request.AddQueryParameter("radius", yelpRequestDto.Radius.Value);
         }
         
-        if (yelpRequest.Price is { Length: > 0 })
+        if (yelpRequestDto.Price is { Length: > 0 })
         {
-            foreach (var item in yelpRequest.Price)
+            foreach (var item in yelpRequestDto.Price)
             {
                 request.AddQueryParameter($"price", item.ToString());
             }
         }
         
-        if (yelpRequest.Categories is { Length: > 0 })
+        if (yelpRequestDto.Categories is { Length: > 0 })
         {
-            foreach (var item in yelpRequest.Categories)
+            foreach (var item in yelpRequestDto.Categories)
             {
                 request.AddQueryParameter($"categories", item.ToString());
             }
         }
         
-        if (!string.IsNullOrWhiteSpace(yelpRequest.Locale))
+        if (!string.IsNullOrWhiteSpace(yelpRequestDto.Locale))
         {
-            request.AddQueryParameter("locale", yelpRequest.Locale.Trim());
+            request.AddQueryParameter("locale", yelpRequestDto.Locale.Trim());
         }
 
-        if (yelpRequest.OpenNow.HasValue)
+        if (yelpRequestDto.OpenNow.HasValue)
         {
-            request.AddQueryParameter("open_now", yelpRequest.OpenNow.Value);
+            request.AddQueryParameter("open_now", yelpRequestDto.OpenNow.Value);
         }
 
-        if (yelpRequest.OpenAt.HasValue)
+        if (yelpRequestDto.OpenAt.HasValue)
         {
-            request.AddQueryParameter("open_at", yelpRequest.OpenAt.Value);
+            request.AddQueryParameter("open_at", yelpRequestDto.OpenAt.Value);
         }
         
-        if(!string.IsNullOrWhiteSpace(yelpRequest.DevicePlatform))
+        if(!string.IsNullOrWhiteSpace(yelpRequestDto.DevicePlatform))
         {
-            request.AddQueryParameter("device_platform", yelpRequest.DevicePlatform.Trim());
+            request.AddQueryParameter("device_platform", yelpRequestDto.DevicePlatform.Trim());
         }
 
-        if(!string.IsNullOrWhiteSpace(yelpRequest.ReservationDate))
+        if(!string.IsNullOrWhiteSpace(yelpRequestDto.ReservationDate))
         {
-            request.AddQueryParameter("reservation_date", yelpRequest.ReservationDate.Trim());
+            request.AddQueryParameter("reservation_date", yelpRequestDto.ReservationDate.Trim());
         }
 
-        if (!string.IsNullOrWhiteSpace(yelpRequest.ReservationTime))
+        if (!string.IsNullOrWhiteSpace(yelpRequestDto.ReservationTime))
         {
-            request.AddQueryParameter("reservation_time", yelpRequest.ReservationTime.Trim());
+            request.AddQueryParameter("reservation_time", yelpRequestDto.ReservationTime.Trim());
         }
         
-        if (yelpRequest.MatchesPartySizeParam.HasValue )
+        if (yelpRequestDto.MatchesPartySizeParam.HasValue )
         {
-            request.AddQueryParameter("matches_party_size_param", yelpRequest.MatchesPartySizeParam.Value);
+            request.AddQueryParameter("matches_party_size_param", yelpRequestDto.MatchesPartySizeParam.Value);
         }
         
-        if (yelpRequest.ReservationCovers.HasValue)
+        if (yelpRequestDto.ReservationCovers.HasValue)
         {
-            request.AddQueryParameter("reservation_covers", yelpRequest.ReservationCovers.Value);
+            request.AddQueryParameter("reservation_covers", yelpRequestDto.ReservationCovers.Value);
         }
         
-        request.AddQueryParameter("sort_by", yelpRequest.SortBy);
-        request.AddQueryParameter("limit", yelpRequest.Limit.ToString());
-        request.AddQueryParameter("offset", yelpRequest.Offset.ToString());
+        request.AddQueryParameter("sort_by", yelpRequestDto.SortBy);
+        request.AddQueryParameter("limit", yelpRequestDto.Limit.ToString());
+        request.AddQueryParameter("offset", yelpRequestDto.Offset.ToString());
         
         const int maxRetries = 3;
 
@@ -127,7 +129,7 @@ public class YelpSearchService: ISearchService
                         PropertyNameCaseInsensitive = true
                     };
 
-                    var yelpData = JsonSerializer.Deserialize<YelpBusinessSearchResponse>(
+                    var yelpData = JsonSerializer.Deserialize<StandardBusinessSearchResponse>(
                         response.Content, deserializerOptions);
 
                     return yelpData;

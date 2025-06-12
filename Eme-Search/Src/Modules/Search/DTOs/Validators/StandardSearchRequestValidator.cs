@@ -3,9 +3,9 @@ using Eme_Search.Modules.Search.DTOs;
 
 namespace Eme_Search.Modules.Search.DTOs.Validators;
 
-public class YelpSearchRequestValidator : AbstractValidator<YelpSearchRequest>
+public class StandardSearchRequestValidator : AbstractValidator<StandardSearchRequestDto>
 {
-    public YelpSearchRequestValidator()
+    public StandardSearchRequestValidator()
     {
         RuleFor(x => x.Location)
             .NotEmpty().WithMessage("Location is required.")
