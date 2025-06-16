@@ -5,5 +5,5 @@ namespace Eme_Search.Modules.Search.Services;
 public interface ISearchService
 {
     string ProviderName { get; }
-    Task<StandardBusinessSearchResponse> SearchAsync(StandardSearchRequestDto requestDto);
+    Task<StandardBusinessSearchResponse> SearchAsync(BlacklistRequestDto requestDto);
 }

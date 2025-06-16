@@ -23,7 +23,7 @@ public class SearchController: ApiController
     }
     
     [HttpGet()]
-    public async Task<ActionResult> Search([FromQuery] StandardSearchRequestDto requestDto, string provider = "yelp")
+    public async Task<ActionResult> Search([FromQuery] BlacklistRequestDto requestDto, string provider = "yelp")
     {
         var searchService = _resolver.Resolve(provider);
         

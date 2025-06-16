@@ -29,7 +29,7 @@ public class YelpSearchService: ISearchService
         _client.AddDefaultHeader("authorization", $"Bearer {secretKey}");
     }
     
-    public async Task<StandardBusinessSearchResponse> SearchAsync(StandardSearchRequestDto yelpRequestDto)
+    public async Task<StandardBusinessSearchResponse> SearchAsync(BlacklistRequestDto yelpRequestDto)
     {
         var request = new RestRequest("");
 

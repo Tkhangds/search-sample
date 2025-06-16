@@ -1,3 +1,4 @@
+using Eme_Search.Modules.Blacklist;
 using Eme_Search.Modules.Search;
 using Eme_Search.Utils.RequestClient;
 
@@ -16,6 +17,9 @@ public static class AppModule
         
         // Inject Search Module
         services.AddSearchModule();
+        
+        // Inject Blacklist Module
+        services.AddBlacklistModule();
         
         return services;
     }
