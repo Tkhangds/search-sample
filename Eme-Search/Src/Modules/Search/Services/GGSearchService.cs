@@ -6,7 +6,7 @@ public class GGSearchService : ISearchService
 {
     public string ProviderName => "google";
 
-    public Task<StandardBusinessSearchResponse> SearchAsync(BlacklistRequestDto request)
+    public Task<StandardBusinessSearchResponse> SearchAsync(SearchRequestDto request)
     {
         // gọi API Google hoặc mock
         throw new NotImplementedException();

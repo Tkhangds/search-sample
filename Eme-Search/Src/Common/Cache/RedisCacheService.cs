@@ -1,15 +1,20 @@
 using System.Text.Json;
 using Microsoft.Extensions.Caching.Distributed;
+using StackExchange.Redis;
 
 namespace Eme_Search.Common.Cache;
 
 public class RedisCacheService: ICacheService
 {
     private readonly IDistributedCache _cache;
-
-    public RedisCacheService(IDistributedCache cache)
+    private readonly ConnectionMultiplexer _connection;
+    private readonly IDatabase _db;
+    private const string KeysSetKey = "cache_keys";
+    public RedisCacheService(IDistributedCache cache, ConnectionMultiplexer connection )
     {
         _cache = cache;
+        _connection = connection;
+        _db = _connection.GetDatabase();
     }
 
     public async Task<T?> GetAsync<T>(string key)
@@ -27,11 +32,24 @@ public class RedisCacheService: ICacheService
             .SetAbsoluteExpiration(TimeSpan.FromHours(1));
         
         var data = JsonSerializer.Serialize(value);
+        
+        await _db.SetAddAsync(KeysSetKey, key);
+        
         await _cache.SetStringAsync(key, data, options);
     }
 
     public async Task RemoveAsync(string key)
     {
         await _cache.RemoveAsync(key);
+    }
+    
+    public async Task ClearAllAsync()
+    {
+        var keys = await _db.SetMembersAsync(KeysSetKey);
+        foreach (var key in keys)
+        {
+            await _cache.RemoveAsync(key);
+        }
+        await _db.KeyDeleteAsync(KeysSetKey);
     }
 }

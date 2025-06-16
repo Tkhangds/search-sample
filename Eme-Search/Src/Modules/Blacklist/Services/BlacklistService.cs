@@ -1,14 +1,12 @@
-using System.Net;
-using System.Text.Json;
 using AutoMapper;
 using Eme_Search.Common;
+using Eme_Search.Common.Cache;
 using Eme_Search.Database.Models;
 using Eme_Search.Infrastructures.Repositories;
 using Eme_Search.Infrastructures.Specifications.Impl;
 using Eme_Search.Modules.Blacklist.DTOs;
 using Eme_Search.Modules.Search.DTOs;
 using Pagination.EntityFrameworkCore.Extensions;
-using RestSharp;
 
 namespace Eme_Search.Modules.Blacklist.Services;
 
@@ -16,11 +14,13 @@ public class BlacklistService: IBlacklistService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
-
-    public BlacklistService(IUnitOfWork unitOfWork, IMapper mapper)
+    private readonly ICacheService _cacheService;  
+    
+    public BlacklistService(IUnitOfWork unitOfWork, IMapper mapper, ICacheService cacheService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _cacheService = cacheService;
     }
 
     public async Task<int> AddBlacklistedBusiness(BlacklistBusinessRequestDto request)
@@ -29,6 +29,8 @@ public class BlacklistService: IBlacklistService
         await _unitOfWork.Repository<BlacklistBusiness>().AddAsync(business);
         await _unitOfWork.SaveChangesAsync();
 
+        await _cacheService.ClearAllAsync();
+        
         return business.Id;
     }
 
@@ -42,6 +44,9 @@ public class BlacklistService: IBlacklistService
         }
 
         await _unitOfWork.Repository<BlacklistBusiness>().DeleteAsync(business);
+        
+        await _cacheService.ClearAllAsync();
+        
         await _unitOfWork.SaveChangesAsync();
     }
 
@@ -49,8 +54,11 @@ public class BlacklistService: IBlacklistService
     {
         var category = _mapper.Map<BlacklistCategory>(request);
         await _unitOfWork.Repository<BlacklistCategory>().AddAsync(category);
+        
+        await _cacheService.ClearAllAsync();
+        
         await _unitOfWork.SaveChangesAsync();
-
+        
         return category.Id;
     }
 
@@ -64,27 +72,30 @@ public class BlacklistService: IBlacklistService
         }
 
         await _unitOfWork.Repository<BlacklistCategory>().DeleteAsync(category);
+        
+        await _cacheService.ClearAllAsync();
+        
         await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task<Pagination<BlacklistBusinessResponseDto>> GetBlacklistedBusinesses(PaginationDto pagination)
     {
         var getPagedBlacklistBusinessSpec = BlacklistBusinessSpecification.GetPagedBlacklistBusiness(pagination);
-        var lists = _unitOfWork.Repository<BlacklistBusiness>().GetAllAsync(getPagedBlacklistBusinessSpec);
+        var lists = await _unitOfWork.Repository<BlacklistBusiness>().GetAllAsync(getPagedBlacklistBusinessSpec);
         var totalLists = await _unitOfWork.Repository<BlacklistBusiness>().CountAsync();
 
         var listDtos = _mapper.Map<BlacklistBusinessResponseDto[]>(lists);
 
         var currentPage = pagination.Page;
         var currentLimit = pagination.Limit;
-
+        
         return new Pagination<BlacklistBusinessResponseDto>(listDtos, totalLists, currentPage, currentLimit);
     }
 
     public async Task<Pagination<BlacklistCategoryResponseDto>> GetBlacklistedCategories(PaginationDto pagination)
     {
         var getPagedBlacklistCategorySpec = BlacklistCategorySpecification.GetPagedBlacklistCategory(pagination);
-        var lists = _unitOfWork.Repository<BlacklistCategory>().GetAllAsync(getPagedBlacklistCategorySpec);
+        var lists = await _unitOfWork.Repository<BlacklistCategory>().GetAllAsync(getPagedBlacklistCategorySpec);
         var totalLists = await _unitOfWork.Repository<BlacklistCategory>().CountAsync();
 
         var listDtos = _mapper.Map<BlacklistCategoryResponseDto[]>(lists);
@@ -93,5 +104,40 @@ public class BlacklistService: IBlacklistService
         var currentLimit = pagination.Limit;
 
         return new Pagination<BlacklistCategoryResponseDto>(listDtos, totalLists, currentPage, currentLimit);
+    }
+
+    public async Task<string[]> FilterCategoryList(string[] categories)
+    {
+        var blacklistedCategories = (await _unitOfWork.Repository<BlacklistCategory>().GetAllAsync()) 
+            .Select(b => b.Alias)
+            .ToHashSet();
+        
+        var filteredCategories = categories
+            .Where(c => !blacklistedCategories.Contains(c))
+            .ToArray();
+
+        return filteredCategories;
+    }
+
+    public async Task<List<StandardSearchResultDto>> FilterSearchResults(List<StandardSearchResultDto> results)
+    {
+        var blacklistedBusinesses = (await _unitOfWork.Repository<BlacklistBusiness>().GetAllAsync());
+
+        var blacklistedIds = blacklistedBusinesses.Select(b => b.YelpId).ToHashSet();
+        var blacklistedNames = blacklistedBusinesses.Select(b => b.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var blacklistedAliases = blacklistedBusinesses.Select(b => b.Alias).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var blacklistedCategories = (await _unitOfWork.Repository<BlacklistCategory>().GetAllAsync()) 
+            .Select(b => b.Alias)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var filtered = results.Where(r =>
+            !blacklistedIds.Contains(r.Id) &&
+            !blacklistedNames.Contains(r.Name) &&
+            !blacklistedAliases.Contains(r.Alias) &&
+            !r.Categories.Any(c => blacklistedCategories.Contains(c.Alias))
+        ).ToList();
+
+        return filtered;
     }
 }

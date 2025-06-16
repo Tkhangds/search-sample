@@ -2,6 +2,7 @@ using Eme_Search.Common.Cache;
 using Eme_Search.Configs;
 using Eme_Search.Exceptions;
 using Eme_Search.Modules;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +22,9 @@ builder.Services.AddExceptionHandler<ExceptionHandler>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
-builder.Services.AddMemoryCache();
+builder.Services.AddMemoryCache();          
+builder.Services.AddSingleton<ConnectionMultiplexer>(                                                                                                                                               
+    ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379"));
 
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
 

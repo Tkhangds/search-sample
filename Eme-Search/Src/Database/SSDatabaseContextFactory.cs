@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using MongoDB.Driver;
 
 namespace Eme_Search.Database;
 

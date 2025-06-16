@@ -1,3 +1,4 @@
+using Eme_Search.Configs;
 using Eme_Search.Modules.Blacklist;
 using Eme_Search.Modules.Search;
 using Eme_Search.Utils.RequestClient;

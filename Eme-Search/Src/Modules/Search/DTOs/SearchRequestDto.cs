@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Eme_Search.Modules.Search.DTOs;
 
-public class BlacklistRequestDto
+public class SearchRequestDto
 {
     [StringLength(250, MinimumLength = 1)]
     public string Location { get; set; } = string.Empty;

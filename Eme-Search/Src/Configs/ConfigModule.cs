@@ -18,5 +18,11 @@ public static class ConfigModule
         
         // Inject Swagger
         services.AddSwaggerGen();
+        
+        // Inject AutoMapper
+        services.AddAutoMapper(typeof(IModuleMarker));
+        
+        // Inject Data Access Layer
+        services.AddDataAccess(configuration);
     }
 }

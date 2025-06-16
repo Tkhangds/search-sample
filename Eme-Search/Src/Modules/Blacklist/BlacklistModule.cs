@@ -16,7 +16,9 @@ public static class BlacklistModule
     {
         services
             .AddAutoMapper(typeof(BlacklistBusinessResponseProfile))
-            .AddAutoMapper(typeof(BlacklistCategoryResponseProfile));
+            .AddAutoMapper(typeof(BlacklistCategoryResponseProfile))
+            .AddAutoMapper(typeof(BlacklistBusinessRequestProfile))
+            .AddAutoMapper(typeof(BlacklistCategoryRequestProfile));
 
         return services;
     }

@@ -24,9 +24,9 @@ public class BlacklistController: ApiController
     }
     
     [HttpDelete("categories/{id:int}")]
-    public IActionResult RemoveBlacklistedCategory([FromRoute] int id)
+    public async  Task<IActionResult> RemoveBlacklistedCategory([FromRoute] int id)
     {
-        _blacklistService.RemoveBlacklistedCategory(id);
+        await _blacklistService.RemoveBlacklistedCategory(id);
         return NoContent();
     }
     
@@ -38,9 +38,9 @@ public class BlacklistController: ApiController
     }
     
     [HttpDelete("businesses/{id:int}")]
-    public IActionResult RemoveBlacklistedBusiness([FromRoute] int id)
+    public async Task<IActionResult> RemoveBlacklistedBusiness([FromRoute] int id)
     {
-        _blacklistService.RemoveBlacklistedBusiness(id);
+        await _blacklistService.RemoveBlacklistedBusiness(id);
         return NoContent();
     }
     

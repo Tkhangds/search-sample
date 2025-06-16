@@ -37,6 +37,10 @@ namespace Eme_Search.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("YelpId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.ToTable("BlacklistBusinesses");
