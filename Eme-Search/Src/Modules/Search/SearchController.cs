@@ -45,12 +45,6 @@ public class SearchController: ApiController
         }
 
         requestDto.Categories = await _blacklistService.FilterCategoryList(requestDto.Categories);
-
-        foreach (var category in requestDto.Categories)
-        {
-            Console.WriteLine(category);
-            Console.WriteLine("/n");
-        }
         
         var result = await searchService.SearchAsync(requestDto);
         
@@ -65,6 +59,41 @@ public class SearchController: ApiController
         {
             StatusCode = HttpStatusCode.OK
             , Message = "Search successful"
+            , Data = result
+        });
+    }
+    
+    [HttpGet("/{idOrAlias}")]
+    public async Task<ActionResult> SearchBusinessByIdOrAlias([FromRoute] string idOrAlias,string provider = "yelp")
+    {
+        var searchService = _resolver.Resolve(provider);
+        
+        string cacheKey = provider + idOrAlias;
+        
+        var cachedProduct = await _cacheService.GetAsync<StandardSearchResultDto>(cacheKey);
+        
+        if (cachedProduct != null)
+        {
+            return Ok(new SuccessResponse
+            {
+                StatusCode = HttpStatusCode.OK,
+                Message = "Search successful (Cached)",
+                Data = cachedProduct
+            });
+        }
+        
+        var result = await searchService.SearchBusinessAsync(idOrAlias);
+        
+        var options = new DistributedCacheEntryOptions()
+            .SetSlidingExpiration(TimeSpan.FromMinutes(10))
+            .SetAbsoluteExpiration(TimeSpan.FromHours(1));
+        
+        await _cacheService.SetAsync<StandardSearchResultDto>(cacheKey, result, options);
+        
+        return Ok(new SuccessResponse
+        {
+            StatusCode = HttpStatusCode.OK
+            , Message = "Search business successful"
             , Data = result
         });
     }

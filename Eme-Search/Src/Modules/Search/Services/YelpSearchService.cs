@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using Eme_Search.Modules.Search.DTOs;
+using Google.Rpc.Context;
 using RestSharp;
 
 namespace Eme_Search.Modules.Search.Services;
@@ -18,7 +19,7 @@ public class YelpSearchService: ISearchService
         
         var secretKey = _configuration.GetValue<string>("YelpAPIKey");
 
-        var options = new RestClientOptions("https://api.yelp.com/v3/businesses/search")
+        var options = new RestClientOptions("https://api.yelp.com/v3/businesses")
         {
             ThrowOnAnyError = true,
             Timeout = TimeSpan.FromSeconds(10),
@@ -31,7 +32,7 @@ public class YelpSearchService: ISearchService
     
     public async Task<StandardBusinessSearchResponse> SearchAsync(SearchRequestDto yelpRequestDto)
     {
-        var request = new RestRequest("");
+        var request = new RestRequest("/search");
 
         if (!string.IsNullOrWhiteSpace(yelpRequestDto.Location))
         {
@@ -130,6 +131,52 @@ public class YelpSearchService: ISearchService
                     };
 
                     var yelpData = JsonSerializer.Deserialize<StandardBusinessSearchResponse>(
+                        response.Content, deserializerOptions);
+
+                    return yelpData;
+                }
+
+                Console.WriteLine($"[Attempt {attempt}] Yelp API returned status {(int)response.StatusCode}: {response.StatusDescription}");
+                
+                if (response.StatusCode == HttpStatusCode.Unauthorized ||
+                    response.StatusCode == HttpStatusCode.Forbidden)
+                {
+                    throw new UnauthorizedAccessException($"Yelp API authorization failed: {(int)response.StatusCode} {response.StatusDescription}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Attempt {attempt}] Yelp API exception: {ex.Message}");
+            }
+
+            if (attempt < maxRetries)
+                await Task.Delay(1000);
+        }
+
+        throw new TimeoutException("Failed to fetch data from Yelp API after 3 attempts.");
+    }
+    
+    public async Task<StandardSearchResultDto?> SearchBusinessAsync(string idOrAlias)
+    {
+        var request = new RestRequest("/{business_id_or_alias}");
+        request.AddParameter("business_id_or_alias", idOrAlias, ParameterType.UrlSegment);
+        
+        const int maxRetries = 3;
+        
+        for (int attempt = 1; attempt <= maxRetries; attempt++)
+        {
+            try
+            {
+                var response = await _client.GetAsync(request);
+
+                if (response.IsSuccessStatusCode && response.Content != null)
+                {
+                    var deserializerOptions = new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    };
+
+                    var yelpData = JsonSerializer.Deserialize<StandardSearchResultDto>(
                         response.Content, deserializerOptions);
 
                     return yelpData;

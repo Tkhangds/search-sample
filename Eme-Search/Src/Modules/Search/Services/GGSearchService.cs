@@ -11,4 +11,9 @@ public class GGSearchService : ISearchService
         // gọi API Google hoặc mock
         throw new NotImplementedException();
     }
+
+    public Task<StandardSearchResultDto?> SearchBusinessAsync(string idOrAlias)
+    {
+        throw new NotImplementedException();
+    }
 }

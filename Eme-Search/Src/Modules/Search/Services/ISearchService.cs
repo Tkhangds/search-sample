@@ -6,4 +6,5 @@ public interface ISearchService
 {
     string ProviderName { get; }
     Task<StandardBusinessSearchResponse> SearchAsync(SearchRequestDto requestDto);
+    Task<StandardSearchResultDto?> SearchBusinessAsync(string idOrAlias);
 }
