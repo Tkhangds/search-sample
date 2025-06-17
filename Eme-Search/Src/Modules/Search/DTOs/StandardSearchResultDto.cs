@@ -135,7 +135,7 @@ public class Category
     public class BusinessAttributes
     {
         [JsonPropertyName("business_temp_closed")]
-        public bool? BusinessTempClosed { get; set; }
+        public int? BusinessTempClosed { get; set; }
 
         [JsonPropertyName("menu_url")]
         public string? MenuUrl { get; set; }

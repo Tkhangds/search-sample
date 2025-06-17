@@ -86,9 +86,6 @@ public class SearchRequestDto
     if (MatchesPartySizeParam.HasValue && MatchesPartySizeParam.Value)
         queryParams.Add("matches_party_size_param=true");
 
-    queryParams.Add($"limit={Limit}");
-    queryParams.Add($"offset={Offset}");
-
     return string.Join("&", queryParams);
 }
 }
