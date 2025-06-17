@@ -29,7 +29,8 @@ public class RedisCacheService: ICacheService
             {
                 gzip.Write(bytes, 0, bytes.Length);
                 gzip.Close();
-
+                Console.WriteLine($"JSON gốc: {data.Length} byte.");
+                Console.WriteLine($"JSON nén: {output.ToArray().Length} byte.");
                 return output.ToArray();
             }
         }

@@ -93,6 +93,7 @@ public class YelpSearchService: ISearchService
                                     .SetSlidingExpiration(TimeSpan.FromMinutes(10))
                                     .SetAbsoluteExpiration(TimeSpan.FromHours(1))
                             );
+                            break;
                         }
                     }
                     catch (Exception ex)
