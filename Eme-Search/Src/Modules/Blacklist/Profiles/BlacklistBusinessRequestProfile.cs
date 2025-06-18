@@ -12,8 +12,7 @@ public class BlacklistBusinessRequestProfile: Profile
             .ConstructUsing(dto => new BlacklistBusiness
             {
                 Alias = dto.Alias,
-                Name = dto.Name,
-                YelpId = dto.YelpId
+                Provider = dto.Provider
             });
         CreateMap<BlacklistBusiness, BlacklistBusinessRequestDto>().ReverseMap();
     }

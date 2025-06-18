@@ -6,7 +6,5 @@ public class BlacklistBusiness: BaseEntity
 {
     public int Id { get; set; }
     public string Alias { get; set; }
-    public string Name { get; set; }
-    
-    public string YelpId { get; set; }
+    public string Provider { get; set; }
 }

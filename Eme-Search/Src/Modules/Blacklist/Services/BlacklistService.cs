@@ -122,9 +122,7 @@ public class BlacklistService: IBlacklistService
     public async Task<List<StandardSearchResultDto>> FilterSearchResults(List<StandardSearchResultDto> results)
     {
         var blacklistedBusinesses = (await _unitOfWork.Repository<BlacklistBusiness>().GetAllAsync());
-
-        var blacklistedIds = blacklistedBusinesses.Select(b => b.YelpId).ToHashSet();
-        var blacklistedNames = blacklistedBusinesses.Select(b => b.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        
         var blacklistedAliases = blacklistedBusinesses.Select(b => b.Alias).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         var blacklistedCategories = (await _unitOfWork.Repository<BlacklistCategory>().GetAllAsync()) 
@@ -132,8 +130,6 @@ public class BlacklistService: IBlacklistService
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         var filtered = results.Where(r =>
-            !blacklistedIds.Contains(r.Id) &&
-            !blacklistedNames.Contains(r.Name) &&
             !blacklistedAliases.Contains(r.Alias) &&
             !r.Categories.Any(c => blacklistedCategories.Contains(c.Alias))
         ).ToList();

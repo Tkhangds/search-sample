@@ -13,8 +13,7 @@ public class BlacklistBusinessResponseProfile: Profile
                 {
                     Id = entity.Id.ToString(),
                     Alias = entity.Alias,
-                    Name = entity.Name,
-                    YelpId = entity.YelpId
+                    Provider = entity.Provider
                 }
             );
         CreateMap<BlacklistBusinessResponseDto, BlacklistBusiness>().ReverseMap();

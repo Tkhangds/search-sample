@@ -15,9 +15,9 @@ public class BlacklistBusinessSpecification
         return new BaseSpecification<BlacklistBusiness>(x => x.Id == id);
     }
     
-    public static BaseSpecification<BlacklistBusiness> GetByTitle(string name)
+    public static BaseSpecification<BlacklistBusiness> GetByProvider(string provider)
     {
-        return new BaseSpecification<BlacklistBusiness>(x => x.Name == name);
+        return new BaseSpecification<BlacklistBusiness>(x => x.Provider == provider);
     }
     
     public static BaseSpecification<BlacklistBusiness> GetPagedBlacklistBusiness(PaginationDto paginationDto)
